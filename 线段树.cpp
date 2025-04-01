@@ -1,70 +1,79 @@
+// 线段树的实现
 #include <iostream>
 #include <cstdio>
-#include <cmath>
 #include <cstring>
 #include <algorithm>
-#define ll long long
+#include <cmath>
 
 using namespace std;
 
 const int N = 2e5 + 10;
+typedef long long ll;
 
 struct node
 {
-	int l, r, sum, tag;
+	ll l, r, sum, tag;
 } tr[N << 2];
 
-int n, m;
-int a[N];
+ll n, m;
+ll a[N];
 
-inline void pushdown(int u)
+void pushdown(ll u)
 {
 	node &p = tr[u], &l = tr[u << 1], &r = tr[u << 1 | 1];
-	l.tag += p.tag;
 	l.sum += p.tag * (l.r - l.l + 1);
-	r.tag += p.tag;
 	r.sum += p.tag * (r.r - r.l + 1);
+	l.tag += p.tag;
+	r.tag += p.tag;
 	p.tag = 0;
 }
 
-inline void build(int u, int l, int r)
+void pushup(ll u)
+{
+	tr[u].sum = tr[u << 1].sum + tr[u << 1 | 1].sum;
+}
+
+void build(ll u, ll l, ll r)
 {
 	if (l == r)
 	{
-		tr[u] = {l, r, a[l]};
+		tr[u] = {l, r, a[l], 0};
 		return;
 	}
 	tr[u] = {l, r};
-	int mid = l + r >> 1;
+	ll mid = l + r >> 1;
 	build(u << 1, l, mid), build(u << 1 | 1, mid + 1, r);
-	tr[u].sum = tr[u << 1].sum + tr[u << 1 | 1].sum;
+	pushup(u);
 }
-inline void modify(int u, int l, int r, int k)
+
+void modify(ll u, ll l, ll r, ll k)
 {
-	pushdown(u);
+	pushdown(u); // 为什么是必要的？答案：因为我们要保证每个节点的sum是正确的，所以我们要先把tag下传
+	// 这样我们才能保证每个节点的sum是正确的，然后再进行修改
+	// 总结：能pushdown就pushdown
 	if (tr[u].l >= l && tr[u].r <= r)
 	{
 		tr[u].sum += k * (tr[u].r - tr[u].l + 1);
 		tr[u].tag += k;
 		return;
 	}
-	int mid = tr[u].l + tr[u].r >> 1;
+	ll mid = tr[u].l + tr[u].r >> 1;
 	if (l <= mid)
 		modify(u << 1, l, r, k);
 	if (r > mid)
 		modify(u << 1 | 1, l, r, k);
-	tr[u].sum = tr[u << 1].sum + tr[u << 1 | 1].sum;
+	pushup(u);
 }
 
-inline int query(int u, int l, int r)
+ll query(ll u, ll l, ll r)
 {
 	pushdown(u);
 	if (tr[u].l >= l && tr[u].r <= r)
 		return tr[u].sum;
-	int mid = tr[u].l + tr[u].r >> 1;
-	int res = 0;
+	ll mid = tr[u].l + tr[u].r >> 1;
+	ll res = 0;
 	if (l <= mid)
-		res = query(u << 1, l, r);
+		res += query(u << 1, l, r);
 	if (r > mid)
 		res += query(u << 1 | 1, l, r);
 	return res;
@@ -73,22 +82,24 @@ inline int query(int u, int l, int r)
 int main()
 {
 	cin >> n >> m;
-	for (int i = 1; i <= n; i++)
-		cin >> a[i];
-	build(1, 1, n);
-	for (int i = 1; i <= m; i++)
+	for (ll i = 1; i <= n; i++)
 	{
-		int t;
-		cin >> t;
-		if (t == 1)
+		cin >> a[i];
+	}
+	build(1, 1, n);
+	for (ll i = 1; i <= m; i++)
+	{
+		ll op;
+		cin >> op;
+		if (op == 1)
 		{
-			int x, y, k;
+			ll x, y, k;
 			cin >> x >> y >> k;
 			modify(1, x, y, k);
 		}
-		if (t == 2)
+		if (op == 2)
 		{
-			int x, y;
+			ll x, y;
 			cin >> x >> y;
 			cout << query(1, x, y) << endl;
 		}

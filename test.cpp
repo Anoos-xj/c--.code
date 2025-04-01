@@ -1,31 +1,43 @@
-#include <cstring>
+// 数组模拟堆排序
 #include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+#include <vector>
 
-using std::cout;
-using std::string;
+using namespace std;
 
-class test
+int n;
+int a[101];
+
+void down(int x)
 {
-public:
-    test(string a) : name(a) {}
-    void settest(string a)
+    while (x * 2 <= n)
     {
-        name = a;
+        int t = x * 2;
+        if (t + 1 <= n && a[t + 1] > a[t])
+            t++;
+        if (a[t] <= a[x])
+            break;
+        std::swap(a[x], a[t]);
+        x = t;
     }
-    string gettest()
-    {
-        return name;
-    }
+}
 
-private:
-    string name;
-};
+void build()
+{
+    for (int i = n; i >= 1; i--)
+        down(i);
+}
 
 int main()
 {
-    string b;
-    string a = "anoos.xj";
-    test t(a);
-    b = t.gettest();
-    cout << b;
+
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+        cin >> a[i];
+    build();
+    cout << a[1] << endl;
+    return 0;
 }
